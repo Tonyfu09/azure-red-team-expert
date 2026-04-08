@@ -1,4 +1,4 @@
-name: Read Azure Storage Flag
+name: Read Azure Storage Flag ✅ FINAL
 on:
   push:
     branches: [ main ]
@@ -10,47 +10,20 @@ jobs:
       id-token: write
       contents: read
     steps:
-      # 🔍 Debug: 先檢查 secrets 有無值
-      - name: 🔍 Debug Secrets & Token
-        run: |
-          echo "CLIENT_ID length: ${#AZURE_CLIENT_ID}"
-          echo "TENANT_ID length: ${#AZURE_TENANT_ID}"
-          echo "SUB_ID length: ${#AZURE_SUBSCRIPTION_ID}"
-          
-          ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r ".value")
-          echo "OIDC_TOKEN length: ${#ID_TOKEN}"
-          echo "$ID_TOKEN" | jq .  # 睇 token 結構
-
-      # ✅ 試用 azure/login action（最穩陣）
-      - name: Azure Login (Recommended)
+      - name: Azure Login
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      # 📋 檢查登入狀態
-      - name: Check Login Status
-        run: |
-          az account show
-          az storage container list \
-            --account-name iamazurelab3be53eb51 \
-            --auth-mode login
-
-      # 📥 下載 flag
-      - name: Download Flag
+      - name: Get Flag 🎉
         run: |
           az storage blob download \
             --account-name iamazurelab3be53eb51 \
             --container-name flag_container_3 \
             --name flag.txt \
-            --file 2.3-flag.txt \
+            --file flag.txt \
             --auth-mode login
-
-      # 🎉 顯示 flag
-      - name: Show Flag ✅
-        run: |
-          echo "=== FLAG CONTENT ==="
-          cat 2.3-flag.txt
-          echo "===================="
+          echo "=== FLAG ==="
+          cat flag.txt
