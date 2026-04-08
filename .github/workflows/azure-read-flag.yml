@@ -37,7 +37,7 @@ jobs:
         run: |
           az storage blob list \
             --account-name "iamazurelab3be53eb51" \
-            --container-name "flag_container_3" \
+            --container-name "flag" \
             --auth-mode login \
             --output table
 
