@@ -1,4 +1,4 @@
-name: Read Azure Storage Flag ✅ MANAGED IDENTITY
+name: Read Azure Storage Flag ✅ FIXED
 on:
   push:
     branches: [ main ]
@@ -6,40 +6,34 @@ on:
 jobs:
   read-flag:
     runs-on: ubuntu-latest
+    **environment: AZURE_CLIENT_ID**  # ← 你嘅 environment 名
     permissions:
       id-token: write
       contents: read
     steps:
-      - name: 🔐 Azure Login with Managed Identity OIDC
+      - name: 🔐 Azure Login (Managed Identity OIDC)
         run: |
-          # 1. 攞 GitHub OIDC token
+          echo "CLIENT_ID: ${AZURE_CLIENT_ID:0:8}..."
+          echo "TENANT_ID: ${AZURE_TENANT_ID:0:8}..."
+          
           ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r ".value")
           
-          # 2. 用 Managed Identity Client ID + OIDC token 登入
           az login --service-principal \
-            --username "${{ secrets.AZURE_CLIENT_ID }}" \
+            --username "$AZURE_CLIENT_ID" \
             --federated-token "$ID_TOKEN" \
-            --tenant "${{ secrets.AZURE_TENANT_ID }}"
+            --tenant "$AZURE_TENANT_ID" \
+            --verbose
           
-          # 3. Set subscription
-          az account set --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
-          
-          # 4. 驗證
+          az account set --subscription "$AZURE_SUBSCRIPTION_ID"
           az account show
 
-      - name: 📥 Get Flag
+      - name: 🎉 Get Flag
         run: |
-          az storage container list \
-            --account-name iamazurelab3be53eb51 \
-            --auth-mode login
-          
           az storage blob download \
             --account-name iamazurelab3be53eb51 \
             --container-name flag_container_3 \
             --name flag.txt \
             --file flag.txt \
             --auth-mode login
-          
-          echo "🎉 FLAG:"
           cat flag.txt
