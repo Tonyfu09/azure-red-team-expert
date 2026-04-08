@@ -9,19 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      id-token: write   # 一定要有，否則唔會出 OIDC token
+      id-token: write
       contents: read
 
     steps:
-      - name: Azure Login (as UAMI)
+      - name: Azure Login (OIDC)
         uses: azure/login@v2
         with:
           client-id: ${{ secrets.AZURE_CLIENT_ID }}
           tenant-id: ${{ secrets.AZURE_TENANT_ID }}
           subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-          auth-type: OIDC
-          login-mapping-type: uami
-          login-uami-client-id: 697548d1-9ef2-4c14-a6e0-d6aadc9ea32a
 
       - name: Download flag as 2.2-flag.txt
         run: |
