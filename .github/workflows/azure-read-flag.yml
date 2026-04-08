@@ -1,4 +1,4 @@
-name: Read Azure Storage Flag ✅ FIXED
+name: Read Azure Storage Flag ✅ HARDCODED
 on:
   push:
     branches: [ main ]
@@ -6,29 +6,33 @@ on:
 jobs:
   read-flag:
     runs-on: ubuntu-latest
-    environment: AZURE_CLIENT_ID  # ← 你嘅 environment 名
     permissions:
       id-token: write
       contents: read
     steps:
       - name: 🔐 Azure Login (Managed Identity OIDC)
+        env:
+          AZURE_CLIENT_ID: 697548d1-9ef2-4c14-a6e0-d6aadc9ea32a
+          AZURE_TENANT_ID: fdd066e1-ee37-49bc-b08f-d0e152119b04
+          AZURE_SUBSCRIPTION_ID: d4b3033a-d7c4-4d36-977e-33a54ba013e5
         run: |
-          echo "CLIENT_ID: ${AZURE_CLIENT_ID:0:8}..."
-          echo "TENANT_ID: ${AZURE_TENANT_ID:0:8}..."
+          echo "CLIENT_ID: ${AZURE_CLIENT_ID}"
+          echo "TENANT_ID: ${AZURE_TENANT_ID}"
           
+          # 攞 GitHub OIDC token
           ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r ".value")
           
+          # 登入
           az login --service-principal \
             --username "$AZURE_CLIENT_ID" \
             --federated-token "$ID_TOKEN" \
-            --tenant "$AZURE_TENANT_ID" \
-            --verbose
-          
+            --tenant "$AZURE_TENANT_ID" --verbose
+            
           az account set --subscription "$AZURE_SUBSCRIPTION_ID"
           az account show
 
-      - name: 🎉 Get Flag
+      - name: 🎉 Download Flag
         run: |
           az storage blob download \
             --account-name iamazurelab3be53eb51 \
@@ -36,4 +40,5 @@ jobs:
             --name flag.txt \
             --file flag.txt \
             --auth-mode login
+          echo "=== FLAG ==="
           cat flag.txt
