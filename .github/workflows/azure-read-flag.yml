@@ -1,0 +1,37 @@
+name: Read Azure Storage Flag
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  read-flag:
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write   # 一定要有，否則唔會出 OIDC token
+      contents: read
+
+    steps:
+      - name: Azure Login (as UAMI)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          auth-type: OIDC
+          login-mapping-type: uami
+          login-uami-client-id: 697548d1-9ef2-4c14-a6e0-d6aadc9ea32a
+
+      - name: Download flag as 2.2-flag.txt
+        run: |
+          az storage blob download \
+            --account-name iamazurelab3be53eb51 \
+            --container-name flag_container_3 \
+            --name flag.txt \
+            --file 2.2-flag.txt \
+            --auth-mode login
+
+      - name: Output 2.2-flag.txt
+        run: |
+          cat 2.2-flag.txt
