@@ -1,39 +1,45 @@
 name: Read Azure Storage Flag
-
 on:
   push:
     branches: [ main ]
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
   read-flag:
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
     steps:
-      - name: Get OIDC token & Login
+      # 🔍 Debug: 先檢查 secrets 有無值
+      - name: 🔍 Debug Secrets & Token
         run: |
-          # 1. Request GitHub OIDC token
+          echo "CLIENT_ID length: ${#AZURE_CLIENT_ID}"
+          echo "TENANT_ID length: ${#AZURE_TENANT_ID}"
+          echo "SUB_ID length: ${#AZURE_SUBSCRIPTION_ID}"
+          
           ID_TOKEN=$(curl -s -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
             "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=api://AzureADTokenExchange" | jq -r ".value")
-          
-          # 2. Login to Azure with OIDC token
-          az login --service-principal \
-            --username "${{ secrets.AZURE_CLIENT_ID }}" \
-            --federated-token "$ID_TOKEN" \
-            --tenant "${{ secrets.AZURE_TENANT_ID }}"
-          
-          # 3. Set subscription
-          az account set --subscription "${{ secrets.AZURE_SUBSCRIPTION_ID }}"
+          echo "OIDC_TOKEN length: ${#ID_TOKEN}"
+          echo "$ID_TOKEN" | jq .  # 睇 token 結構
 
-      - name: List containers
+      # ✅ 試用 azure/login action（最穩陣）
+      - name: Azure Login (Recommended)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      # 📋 檢查登入狀態
+      - name: Check Login Status
         run: |
+          az account show
           az storage container list \
             --account-name iamazurelab3be53eb51 \
             --auth-mode login
 
-      - name: Download flag as 2.3-flag.txt
+      # 📥 下載 flag
+      - name: Download Flag
         run: |
           az storage blob download \
             --account-name iamazurelab3be53eb51 \
@@ -42,6 +48,9 @@ jobs:
             --file 2.3-flag.txt \
             --auth-mode login
 
-      - name: Output 2.2-flag.txt
+      # 🎉 顯示 flag
+      - name: Show Flag ✅
         run: |
-          cat 2.2-flag.txt
+          echo "=== FLAG CONTENT ==="
+          cat 2.3-flag.txt
+          echo "===================="
