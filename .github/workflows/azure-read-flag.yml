@@ -13,34 +13,29 @@ jobs:
       contents: read
 
     steps:
-      - name: Azure CLI Login with OIDC
-        run: |
-          echo "${{ secrets.AZURE_CLIENT_ID }}" > /tmp/client-id.txt
-          echo "${{ secrets.AZURE_TENANT_ID }}" > /tmp/tenant-id.txt
-          echo "${{ secrets.AZURE_SUBSCRIPTION_ID }}" > /tmp/subscription-id.txt
-          
-          response=$(curl -X POST \
-            -H "Content-Type: application/x-www-form-urlencoded" \
-            -d "client_id=${{ secrets.AZURE_CLIENT_ID }}&scope=https://management.azure.com/.default&grant_type=client_credentials" \
-            "https://login.microsoftonline.com/${{ secrets.AZURE_TENANT_ID }}/oauth2/v2.0/token")
+      - name: Azure Login (OIDC)
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          audience: api://AzureADTokenExchange
 
-      - name: Install Azure CLI
+      - name: List containers
         run: |
-          curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+          az storage container list \
+            --account-name iamazurelab3be53eb51 \
+            --auth-mode login
 
-      - name: OIDC Login to Azure
-        run: |
-          az login \
-            --service-principal \
-            --username ${{ secrets.AZURE_CLIENT_ID }} \
-            --tenant ${{ secrets.AZURE_TENANT_ID }} \
-            --federated-token "$(curl -H 'Authorization: Bearer ${{ steps.id_token.outputs.value }}' \
-            https://management.azure.com/subscriptions/${{ secrets.AZURE_SUBSCRIPTION_ID }}/providers/Microsoft.Authorization/roleAssignments?api-version=2022-04-01 | jq -r '.value[0].properties.principalId')" \
-            --allow-no-subscriptions
-
-      - name: Download flag as 2.2-flag.txt
+      - name: Download flag as 2.3-flag.txt
         run: |
           az storage blob download \
             --account-name iamazurelab3be53eb51 \
             --container-name flag_container_3 \
-            --name
+            --name flag.txt \
+            --file 2.3-flag.txt \
+            --auth-mode login
+
+      - name: Output 2.3-flag.txt
+        run: |
+          cat 2.3-flag.txt
