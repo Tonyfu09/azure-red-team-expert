@@ -6,7 +6,7 @@ on:
 jobs:
   read-flag:
     runs-on: ubuntu-latest
-    **environment: AZURE_CLIENT_ID**  # ← 你嘅 environment 名
+    environment: AZURE_CLIENT_ID  # ← 你嘅 environment 名
     permissions:
       id-token: write
       contents: read
